@@ -488,7 +488,7 @@
 						"     insertIf(isNull(Business_Unit_ID))) ~> AlterRow",
 						"TrimCap filter(Status == 'Approved') ~> StatusFilter",
 						"OLTPDataSource derive(each(match(\"type\"==\"string\"), $$ = trim($$)),",
-						"          each(match(\"type\"==\"string\"), $$ = upper(substring($$,0,1)) + substring($$,1))) ~> TrimCap",
+						"          each(match(\"type\"==\"string\"), $$ = initCap($$))) ~> TrimCap",
 						"AlterRow sink(allowSchemaDrift: true,",
 						"     validateSchema: true,",
 						"     input(",
