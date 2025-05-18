@@ -1,95 +1,98 @@
-Got it! Here's the plain, clean README.md text in one block without emojis or special formatting blocks, ready to copy:
+ADF CP Area Config Sync
 
----
+This repository contains Azure Data Factory (ADF) assets designed to synchronize Area Config Master data from the OLTP system to the OLAP data warehouse with robust data quality checks, error handling, and change detection logic.
 
-# ADF CP Area Config Sync
+ Project Overview
 
-This repository contains Azure Data Factory (ADF) assets to sync Area Config Master data from the OLTP system to the OLAP data warehouse with proper data quality checks and change detection logic.
+This ADF project ensures accurate data migration from [CP_OLTP].[CP_Area_Config_Master] to [CP_OLAP].[CP_Area_Dimension], with enhancements for error logging, trimming, filtering, and SCD tracking.
 
-Project Overview:
+ Key Features
 
-This ADF project ensures accurate and clean data synchronization from \[CP\_OLTP].\[CP\_Area\_Config\_Master] to \[CP\_OLAP].\[CP\_Area\_Dimension], applying trimming, filtering, and SCD logic (insert/update detection).
+✔ Filters only Approved rows (Status = 'Approved')✔ Trims all text fields to remove extra spaces✔ Detects Inserts & Updates using Business_Unit_ID✔ Implements default values (Begin_Date, End_Date, Current_Rec_In)✔ Tracks data changes dynamically (Current_Rec_In increments for updates)✔ Error Handling Mechanism logs failed records in a separate table✔ Reusable and parameterized pipeline for future scaling
 
-Key Features:
-
-* Filters only Status = 'Approved' rows
-* Trims all text fields to remove extra spaces
-* Identifies inserts vs updates using Business\_Unit\_ID
-* Adds metadata like Current\_Rec\_In, Begin\_Date, End\_Date
-* Reusable and parameterized pipeline
-
-Structure:
+ Repository Structure
 
 /adf
+ ├── pipelines/
+ │    ├── CP_pl_areaconfig.json
+ │ 
+ ├── dataflows/
+ │    ├── cp_df_areaconfig.dfd.json
+ │ 
+ ├── linkedServices/
+ │    ├── AzureSql_OLTP.json
+ │    ├── AzureSql_OLAP.json
+ │ 
+ ├── datasets/
+ │    ├── CP_OLTP_Area_Config_Master.json
+ │    ├── CP_OLAP_Area_Dimension.json
 
-* pipelines/
+ Getting Started
 
-  * CP\_pl\_areaconfig.json
-* dataflows/
+ Prerequisites
 
-  * cp\_df\_areaconfig.dfd.json
-* linkedServices/
+ Azure Subscription
 
-  * AzureSql\_OLTP.json
-  * AzureSql\_OLAP.json
-* datasets/
+ Azure Data Factory V2
 
-  * CP\_OLTP\_Area\_Config\_Master.json
-  * CP\_OLAP\_Area\_Dimension.json
+ Git integration enabled in ADF
 
-Getting Started:
+ Setup
 
-Prerequisites:
+ Clone this repo
 
-* Azure Subscription
-* Azure Data Factory V2
-* Git integration enabled in ADF
+git clone https://github.com/your-org/adf-cp-area-config-sync.git
 
-Setup:
+ Connect Git in ADF
 
-1. Clone this repo:
-   git clone [https://github.com/your-org/adf-cp-area-config-sync.git](https://github.com/your-org/adf-cp-area-config-sync.git)
-2. Connect Git in ADF:
+Go to Manage > Git Configuration
 
-   * Go to Manage > Git Configuration
-   * Use your repo, branch, and root folder
-   * Sync your workspace
-3. Deploy and publish changes
+Use your repo, branch, and root folder
 
-Dataflow Logic – cp\_df\_areaconfig:
+Sync your workspace
 
-* Source: \[CP\_OLTP].\[CP\_Area\_Config\_Master]
-* Filter: Status = 'Approved'
-* Trim Columns: Removes leading/trailing spaces
-* Join: Match with \[CP\_OLAP].\[CP\_Area\_Dimension] on Business\_Unit\_ID
-* Detect Changes:
+Deploy and publish changes
 
-  * New records → Current\_Rec\_In = 1
-  * Updated records → Current\_Rec\_In = 2
-* Sink: Append data to dimension table with deduplication
+Dataflow Logic – cp_df_areaconfig
 
-Pipeline – CP\_pl\_areaconfig:
+Step-by-Step Transformation
 
-* Invokes the cp\_df\_areaconfig Dataflow
-* Can be scheduled or triggered manually
-* Supports environment-based parameterization if needed
+Source → Reads from [CP_OLTP].[CP_Area_Config_Master]2️⃣ Format String → Cleans text columns (removes spaces)3️⃣ Status Filter → Filters rows (Status = 'Approved')4️⃣ Alter Row → Determines inserts vs updates5️⃣ Set Default Values → Assigns default values:
 
-Notes:
+Begin_Date = currentUTC()
 
-* Destination does not store the Status column.
-* SCD logic is based on changes to business fields (not surrogate key).
-* Business\_Unit\_ID acts as a unique identifier.
-* Uses effective date range logic for tracking changes.
+End_Date = toDate('9999-12-31', 'yyyy-MM-dd')
 
-Contact:
+Current_Rec_In = 1 (or increments for updates)6️⃣ Load Destination → Inserts/updates in [CP_OLAP].[CP_Area_Dimension]
 
-Developer: Vamsi
-Email: [vamsiroyal07@outlook.com](mailto:vamsiroyal07@outlook.com)
+Error Handling Mechanism
 
-License:
+Failed records are logged in [CP_OLTP].[CP_Error_Log]✔ Stored Procedure captures errors dynamically✔ Pipeline failure detection ensures troubleshooting
+
+Error Log Table
+
+CREATE TABLE [CP_OLTP].[CP_Error_Log] (
+    Error_ID INT IDENTITY(1,1) PRIMARY KEY,
+    Pipeline_Name NVARCHAR(255),
+    Error_Message NVARCHAR(MAX),
+    Failed_Record NVARCHAR(MAX),
+    Timestamp DATETIME DEFAULT GETDATE()
+);
+
+ Automatically logs errors during pipeline execution.
+
+Change Tracking (SCD Type 1)
+
+Initial Insert: Current_Rec_In = 1✔ First Update: Current_Rec_In = 2✔ Further Changes: Increment dynamically (Current_Rec_In + 1)
+
+Logic Implementation in Derived Column:
+
+iif(isNull(Current_Rec_In_Lookup), 1, Current_Rec_In_Lookup + 1)
+
+Contact
+
+Developer: Vamsi, Email: vamsiroyal07@outlook.com
+
+License
 
 This project is internal-use only. Reach out for external usage rights or licensing queries.
-
----
-
-Just let me know if you want me to adjust it further!
