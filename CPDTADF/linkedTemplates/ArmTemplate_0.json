@@ -402,6 +402,10 @@
 						{
 							"name": "FormatString",
 							"description": "This Derived Column activity ensures consistent formatting by trimming leading and trailing spaces from all string columns. Additionally, it capitalizes only the first letter of each value while keeping the rest of the text unchanged. This transformation helps maintain standardized data before further processing\n"
+						},
+						{
+							"name": "SetDefaultValues",
+							"description": "This step is responsible for assigning default values to specific columns before loading data into the destination table. It ensures consistency in historical tracking and simplifies downstream processing."
 						}
 					],
 					"scriptLines": [
@@ -447,7 +451,10 @@
 						"          Plant_ID = upper(left(trim(Plant_ID), 1)) + right(trim(Plant_ID), length(trim(Plant_ID)) - 1),",
 						"          Plant_ID2 = upper(left(trim(Plant_ID2), 1)) + right(trim(Plant_ID2), length(trim(Plant_ID2)) - 1),",
 						"          Tier_Classification = upper(left(trim(Tier_Classification), 1)) + right(trim(Tier_Classification), length(trim(Tier_Classification)) - 1)) ~> FormatString",
-						"AlterRow sink(allowSchemaDrift: true,",
+						"AlterRow derive(Begin_Date = currentUTC(),",
+						"          End_Date = toDate('9999-12-31', 'yyyy-MM-dd'),",
+						"          Current_Rec_In = 1) ~> SetDefaultValues",
+						"SetDefaultValues sink(allowSchemaDrift: true,",
 						"     validateSchema: true,",
 						"     input(",
 						"          Business_Unit_KEY as integer,",
@@ -494,12 +501,15 @@
 						"          Area_Classification_2,",
 						"          Plant_ID,",
 						"          Plant_ID2,",
-						"          Asset_Owner = Tier_Classification,",
+						"          Asset_Owner,",
 						"          Cost_Center,",
 						"          Tier_Classification,",
 						"          Comments,",
 						"          Business_Justification,",
 						"          Attachments,",
+						"          Begin_Date,",
+						"          End_Date,",
+						"          Current_Rec_In,",
 						"          Field_Engineer_Name = Field_Engineer,",
 						"          Field_Engineer_Remarks,",
 						"          Approver_1_Name,",
