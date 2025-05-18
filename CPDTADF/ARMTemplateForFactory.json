@@ -447,8 +447,8 @@
 							"name": "StatusFilter"
 						},
 						{
-							"name": "Trim",
-							"description": "This Derived Column activity trims leading and trailing spaces from the string columns ensuring consistent formatting before further processing."
+							"name": "FormatString",
+							"description": "This Derived Column activity ensures consistent formatting by trimming leading and trailing spaces from all string columns. Additionally, it capitalizes only the first letter of each value while keeping the rest of the text unchanged. This transformation helps maintain standardized data before further processing\n"
 						}
 					],
 					"scriptLines": [
@@ -486,8 +486,14 @@
 						"     format: 'table') ~> OLTPDataSource",
 						"StatusFilter alterRow(upsertIf(!isNull(Business_Unit_ID)),",
 						"     insertIf(isNull(Business_Unit_ID))) ~> AlterRow",
-						"Trim filter(Status == 'Approved') ~> StatusFilter",
-						"OLTPDataSource derive(Block_ID = upper(left(trim(Block_ID), 1)) + right(trim(Block_ID), length(trim(Block_ID)) - 1)) ~> Trim",
+						"FormatString filter(Status == 'Approved') ~> StatusFilter",
+						"OLTPDataSource derive(Block_ID = upper(left(trim(Block_ID), 1)) + right(trim(Block_ID), length(trim(Block_ID)) - 1),",
+						"          Business_Unit = upper(left(trim(Business_Unit), 1)) + right(trim(Business_Unit), length(trim(Business_Unit)) - 1),",
+						"          Area_Classification_1 = upper(left(trim(Area_Classification_1), 1)) + right(trim(Area_Classification_1), length(trim(Area_Classification_1)) - 1),",
+						"          Area_Classification_2 = upper(left(trim(Area_Classification_2), 1)) + right(trim(Area_Classification_2), length(trim(Area_Classification_2)) - 1),",
+						"          Plant_ID = upper(left(trim(Plant_ID), 1)) + right(trim(Plant_ID), length(trim(Plant_ID)) - 1),",
+						"          Plant_ID2 = upper(left(trim(Plant_ID2), 1)) + right(trim(Plant_ID2), length(trim(Plant_ID2)) - 1),",
+						"          Tier_Classification = upper(left(trim(Tier_Classification), 1)) + right(trim(Tier_Classification), length(trim(Tier_Classification)) - 1)) ~> FormatString",
 						"AlterRow sink(allowSchemaDrift: true,",
 						"     validateSchema: true,",
 						"     input(",
@@ -535,7 +541,7 @@
 						"          Area_Classification_2,",
 						"          Plant_ID,",
 						"          Plant_ID2,",
-						"          Asset_Owner,",
+						"          Asset_Owner = Tier_Classification,",
 						"          Cost_Center,",
 						"          Tier_Classification,",
 						"          Comments,",
