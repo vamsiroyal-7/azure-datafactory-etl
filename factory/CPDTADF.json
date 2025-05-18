@@ -1,0 +1,9 @@
+{
+	"name": "CPDTADF",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "086f5bee-9bcb-4dd5-b69f-67f07be61015",
+		"tenantId": "c4dc7da2-ee59-4ef5-b3ad-3388c57bdf20"
+	}
+}

@@ -1,0 +1,136 @@
+{
+	"name": "CP_DF_AreaConfig",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Source_Table",
+						"type": "DatasetReference"
+					},
+					"name": "OLTPDataSource"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Destination_Table",
+						"type": "DatasetReference"
+					},
+					"name": "OLAPDimensionLoad"
+				}
+			],
+			"transformations": [
+				{
+					"name": "AlterRow"
+				},
+				{
+					"name": "StatusFilter"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Business_Unit_ID as integer,",
+				"          Business_Unit as string,",
+				"          Block_ID as string,",
+				"          Area_Classification_1 as string,",
+				"          Area_Classification_2 as string,",
+				"          Plant_ID as string,",
+				"          Plant_ID2 as string,",
+				"          Asset_Owner as string,",
+				"          Cost_Center as string,",
+				"          Tier_Classification as string,",
+				"          Comments as string,",
+				"          Business_Justification as string,",
+				"          Attachments as string,",
+				"          Status as string,",
+				"          Field_Engineer as string,",
+				"          Field_Engineer_Remarks as string,",
+				"          Approver_1_Name as string,",
+				"          Approver_1_Remarks as string,",
+				"          Approver_1_Timestamp as timestamp,",
+				"          Approver_2_Name as string,",
+				"          Approver_2_Remarks as string,",
+				"          Approver_2_Timestamp as timestamp,",
+				"          Created_By as string,",
+				"          Created_Timestamp as timestamp,",
+				"          Updated_By as string,",
+				"          Updated_Timestamp as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> OLTPDataSource",
+				"StatusFilter alterRow(upsertIf(!isNull(Business_Unit_ID)),",
+				"     insertIf(isNull(Business_Unit_ID))) ~> AlterRow",
+				"OLTPDataSource filter(Status == 'Approved') ~> StatusFilter",
+				"AlterRow sink(allowSchemaDrift: true,",
+				"     validateSchema: true,",
+				"     input(",
+				"          Business_Unit_KEY as integer,",
+				"          Business_Unit as string,",
+				"          Block_ID as string,",
+				"          Area_Classification_1 as string,",
+				"          Area_Classification_2 as string,",
+				"          Plant_ID as string,",
+				"          Plant_ID2 as string,",
+				"          Asset_Owner as string,",
+				"          Cost_Center as string,",
+				"          Tier_Classification as string,",
+				"          Comments as string,",
+				"          Business_Justification as string,",
+				"          Attachments as string,",
+				"          Begin_Date as date,",
+				"          End_Date as date,",
+				"          Current_Rec_In as integer,",
+				"          Field_Engineer_Name as string,",
+				"          Field_Engineer_Remarks as string,",
+				"          Approver_1_Name as string,",
+				"          Approver_1_Remarks as string,",
+				"          Approver_1_Timestamp as timestamp,",
+				"          Approver_2_Name as string,",
+				"          Approver_2_Remarks as string,",
+				"          Approver_2_Timestamp as timestamp,",
+				"          Created_By as string,",
+				"          Created_Timestamp as timestamp,",
+				"          Updated_By as string,",
+				"          Updated_Timestamp as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:true,",
+				"     keys:['Business_Unit_KEY'],",
+				"     format: 'table',",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          Business_Unit_KEY = Business_Unit_ID,",
+				"          Business_Unit,",
+				"          Block_ID,",
+				"          Area_Classification_1,",
+				"          Area_Classification_2,",
+				"          Plant_ID,",
+				"          Plant_ID2,",
+				"          Asset_Owner,",
+				"          Cost_Center,",
+				"          Tier_Classification,",
+				"          Comments,",
+				"          Business_Justification,",
+				"          Attachments,",
+				"          Field_Engineer_Remarks,",
+				"          Approver_1_Name,",
+				"          Approver_1_Remarks,",
+				"          Approver_1_Timestamp,",
+				"          Approver_2_Name,",
+				"          Approver_2_Remarks,",
+				"          Approver_2_Timestamp,",
+				"          Created_By,",
+				"          Created_Timestamp,",
+				"          Updated_By,",
+				"          Updated_Timestamp",
+				"     )) ~> OLAPDimensionLoad"
+			]
+		}
+	}
+}
