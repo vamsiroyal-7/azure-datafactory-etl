@@ -29,8 +29,8 @@
 					"name": "StatusFilter"
 				},
 				{
-					"name": "TrimCap",
-					"description": "This Derived Column activity trims leading and trailing spaces from the string columns and converts its first letter to uppercase while keeping the rest of the characters as is, ensuring consistent formatting before further processing."
+					"name": "Trim",
+					"description": "This Derived Column activity trims leading and trailing spaces from the string columns ensuring consistent formatting before further processing."
 				}
 			],
 			"scriptLines": [
@@ -68,9 +68,8 @@
 				"     format: 'table') ~> OLTPDataSource",
 				"StatusFilter alterRow(upsertIf(!isNull(Business_Unit_ID)),",
 				"     insertIf(isNull(Business_Unit_ID))) ~> AlterRow",
-				"TrimCap filter(Status == 'Approved') ~> StatusFilter",
-				"OLTPDataSource derive(each(match(\"type\"==\"string\"), $$ = trim($$)),",
-				"          each(match(\"type\"==\"string\"), $$ = initCap($$))) ~> TrimCap",
+				"Trim filter(Status == 'Approved') ~> StatusFilter",
+				"OLTPDataSource derive(Block_ID = upper(left(trim(Block_ID), 1)) + right(trim(Block_ID), length(trim(Block_ID)) - 1)) ~> Trim",
 				"AlterRow sink(allowSchemaDrift: true,",
 				"     validateSchema: true,",
 				"     input(",
