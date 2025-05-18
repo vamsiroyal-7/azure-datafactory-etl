@@ -27,6 +27,10 @@
 				},
 				{
 					"name": "StatusFilter"
+				},
+				{
+					"name": "TrimCap",
+					"description": "This Derived Column activity trims leading and trailing spaces from the Block_ID column and converts its first letter to uppercase while keeping the rest of the characters lowercase, ensuring consistent formatting before further processing."
 				}
 			],
 			"scriptLines": [
@@ -64,7 +68,8 @@
 				"     format: 'table') ~> OLTPDataSource",
 				"StatusFilter alterRow(upsertIf(!isNull(Business_Unit_ID)),",
 				"     insertIf(isNull(Business_Unit_ID))) ~> AlterRow",
-				"OLTPDataSource filter(Status == 'Approved') ~> StatusFilter",
+				"TrimCap filter(Status == 'Approved') ~> StatusFilter",
+				"OLTPDataSource derive(Block_ID = trim(Block_ID)) ~> TrimCap",
 				"AlterRow sink(allowSchemaDrift: true,",
 				"     validateSchema: true,",
 				"     input(",
@@ -107,7 +112,7 @@
 				"     mapColumn(",
 				"          Business_Unit_KEY = Business_Unit_ID,",
 				"          Business_Unit,",
-				"          Block_ID,",
+				"          Block_ID = {},",
 				"          Area_Classification_1,",
 				"          Area_Classification_2,",
 				"          Plant_ID,",
