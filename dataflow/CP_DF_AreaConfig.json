@@ -149,7 +149,7 @@
 				"     && FormatString@Cost_Center == Lookuptable@Cost_Center,",
 				"     multiple: true,",
 				"     broadcast: 'auto')~> LookupExistingRecords",
-				"LookupExistingRecords alterRow(insertIf(isNull(Lookuptable@Business_Unit_ID)),",
+				"LookupExistingRecords alterRow(insertIf(isNull(Lookuptable@Business_Unit_ID) && !isNull(OLTPDataSource@Business_Unit_ID)),",
 				"     updateIf(!isNull(Lookuptable@Business_Unit_ID) && (     iif(isNull(FormatString@Business_Unit), '', FormatString@Business_Unit) != iif(isNull(Lookuptable@Business_Unit), '', Lookuptable@Business_Unit) ))) ~> DetectChangesAlterRow",
 				"SelectBeforeSurrogateKey keyGenerate(output(Business_Unit_key as long),",
 				"     startAt: 1L,",
