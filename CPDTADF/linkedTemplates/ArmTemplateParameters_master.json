@@ -8,12 +8,6 @@
 		"AzureSqlDatabase1_password": {
 			"value": ""
 		},
-		"AzureSqlDatabase2_password": {
-			"value": ""
-		},
-		"AzureSqlDatabase3_password": {
-			"value": ""
-		},
 		"AzureSqlDatabase1_properties_typeProperties_server": {
 			"value": "cpdt.database.windows.net"
 		},
@@ -21,24 +15,6 @@
 			"value": "cpdt"
 		},
 		"AzureSqlDatabase1_properties_typeProperties_userName": {
-			"value": "cpdt"
-		},
-		"AzureSqlDatabase2_properties_typeProperties_server": {
-			"value": "cpdt.database.windows.net"
-		},
-		"AzureSqlDatabase2_properties_typeProperties_database": {
-			"value": "cpdt"
-		},
-		"AzureSqlDatabase2_properties_typeProperties_userName": {
-			"value": "cpdt"
-		},
-		"AzureSqlDatabase3_properties_typeProperties_server": {
-			"value": "cpdt.database.windows.net"
-		},
-		"AzureSqlDatabase3_properties_typeProperties_database": {
-			"value": "cpdt"
-		},
-		"AzureSqlDatabase3_properties_typeProperties_userName": {
 			"value": "cpdt"
 		},
 		"containerUri": {

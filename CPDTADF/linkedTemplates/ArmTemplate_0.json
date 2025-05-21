@@ -11,14 +11,6 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'AzureSqlDatabase1'"
 		},
-		"AzureSqlDatabase2_password": {
-			"type": "secureString",
-			"metadata": "Secure string for 'password' of 'AzureSqlDatabase2'"
-		},
-		"AzureSqlDatabase3_password": {
-			"type": "secureString",
-			"metadata": "Secure string for 'password' of 'AzureSqlDatabase3'"
-		},
 		"AzureSqlDatabase1_properties_typeProperties_server": {
 			"type": "string",
 			"defaultValue": "cpdt.database.windows.net"
@@ -28,30 +20,6 @@
 			"defaultValue": "cpdt"
 		},
 		"AzureSqlDatabase1_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "cpdt"
-		},
-		"AzureSqlDatabase2_properties_typeProperties_server": {
-			"type": "string",
-			"defaultValue": "cpdt.database.windows.net"
-		},
-		"AzureSqlDatabase2_properties_typeProperties_database": {
-			"type": "string",
-			"defaultValue": "cpdt"
-		},
-		"AzureSqlDatabase2_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "cpdt"
-		},
-		"AzureSqlDatabase3_properties_typeProperties_server": {
-			"type": "string",
-			"defaultValue": "cpdt.database.windows.net"
-		},
-		"AzureSqlDatabase3_properties_typeProperties_database": {
-			"type": "string",
-			"defaultValue": "cpdt"
-		},
-		"AzureSqlDatabase3_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "cpdt"
 		}
@@ -83,50 +51,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/AzureSqlDatabase2')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureSqlDatabase",
-				"typeProperties": {
-					"server": "[parameters('AzureSqlDatabase2_properties_typeProperties_server')]",
-					"database": "[parameters('AzureSqlDatabase2_properties_typeProperties_database')]",
-					"encrypt": "mandatory",
-					"trustServerCertificate": false,
-					"authenticationType": "SQL",
-					"userName": "[parameters('AzureSqlDatabase2_properties_typeProperties_userName')]",
-					"password": {
-						"type": "SecureString",
-						"value": "[parameters('AzureSqlDatabase2_password')]"
-					}
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/AzureSqlDatabase3')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureSqlDatabase",
-				"typeProperties": {
-					"server": "[parameters('AzureSqlDatabase3_properties_typeProperties_server')]",
-					"database": "[parameters('AzureSqlDatabase3_properties_typeProperties_database')]",
-					"encrypt": "mandatory",
-					"trustServerCertificate": false,
-					"authenticationType": "SQL",
-					"userName": "[parameters('AzureSqlDatabase3_properties_typeProperties_userName')]",
-					"password": {
-						"type": "SecureString",
-						"value": "[parameters('AzureSqlDatabase3_password')]"
-					}
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/AzureSqlTable1')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -138,6 +62,11 @@
 				"annotations": [],
 				"type": "AzureSqlTable",
 				"schema": [
+					{
+						"name": "Business_Unit_ID",
+						"type": "int",
+						"precision": 10
+					},
 					{
 						"name": "Business_Unit",
 						"type": "varchar"
@@ -187,20 +116,11 @@
 						"type": "varchar"
 					},
 					{
-						"name": "Begin_Date",
-						"type": "date"
+						"name": "Status",
+						"type": "varchar"
 					},
 					{
-						"name": "End_Date",
-						"type": "date"
-					},
-					{
-						"name": "Current_Rec_In",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "Field_Engineer_Name",
+						"name": "Field_Engineer",
 						"type": "varchar"
 					},
 					{
@@ -254,16 +174,11 @@
 						"type": "datetime",
 						"precision": 23,
 						"scale": 3
-					},
-					{
-						"name": "Business_Unit_ID",
-						"type": "int",
-						"precision": 10
 					}
 				],
 				"typeProperties": {
-					"schema": "CP_OLAP",
-					"table": "CP_Area_Dimension"
+					"schema": "CP_OLTP",
+					"table": "CP_Area_Config_Master"
 				}
 			},
 			"dependsOn": [
@@ -276,7 +191,7 @@
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "AzureSqlDatabase3",
+					"referenceName": "AzureSqlDatabase1",
 					"type": "LinkedServiceReference"
 				},
 				"annotations": [],
@@ -416,285 +331,6 @@
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase3')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Destination_Table')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureSqlDatabase2",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "Business_Unit_KEY",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "Business_Unit",
-						"type": "varchar"
-					},
-					{
-						"name": "Block_ID",
-						"type": "varchar"
-					},
-					{
-						"name": "Area_Classification_1",
-						"type": "varchar"
-					},
-					{
-						"name": "Area_Classification_2",
-						"type": "varchar"
-					},
-					{
-						"name": "Plant_ID",
-						"type": "varchar"
-					},
-					{
-						"name": "Plant_ID2",
-						"type": "varchar"
-					},
-					{
-						"name": "Asset_Owner",
-						"type": "varchar"
-					},
-					{
-						"name": "Cost_Center",
-						"type": "varchar"
-					},
-					{
-						"name": "Tier_Classification",
-						"type": "varchar"
-					},
-					{
-						"name": "Comments",
-						"type": "varchar"
-					},
-					{
-						"name": "Business_Justification",
-						"type": "varchar"
-					},
-					{
-						"name": "Attachments",
-						"type": "varchar"
-					},
-					{
-						"name": "Begin_Date",
-						"type": "date"
-					},
-					{
-						"name": "End_Date",
-						"type": "date"
-					},
-					{
-						"name": "Current_Rec_In",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "Field_Engineer_Name",
-						"type": "varchar"
-					},
-					{
-						"name": "Field_Engineer_Remarks",
-						"type": "varchar"
-					},
-					{
-						"name": "Approver_1_Name",
-						"type": "varchar"
-					},
-					{
-						"name": "Approver_1_Remarks",
-						"type": "varchar"
-					},
-					{
-						"name": "Approver_1_Timestamp",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
-					},
-					{
-						"name": "Approver_2_Name",
-						"type": "varchar"
-					},
-					{
-						"name": "Approver_2_Remarks",
-						"type": "varchar"
-					},
-					{
-						"name": "Approver_2_Timestamp",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
-					},
-					{
-						"name": "Created_By",
-						"type": "varchar"
-					},
-					{
-						"name": "Created_Timestamp",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
-					},
-					{
-						"name": "Updated_By",
-						"type": "varchar"
-					},
-					{
-						"name": "Updated_Timestamp",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
-					}
-				],
-				"typeProperties": {
-					"schema": "CP_OLAP",
-					"table": "CP_Area_Dimension"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase2')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Source_Table')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureSqlDatabase1",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "Business_Unit_ID",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "Business_Unit",
-						"type": "varchar"
-					},
-					{
-						"name": "Block_ID",
-						"type": "varchar"
-					},
-					{
-						"name": "Area_Classification_1",
-						"type": "varchar"
-					},
-					{
-						"name": "Area_Classification_2",
-						"type": "varchar"
-					},
-					{
-						"name": "Plant_ID",
-						"type": "varchar"
-					},
-					{
-						"name": "Plant_ID2",
-						"type": "varchar"
-					},
-					{
-						"name": "Asset_Owner",
-						"type": "varchar"
-					},
-					{
-						"name": "Cost_Center",
-						"type": "varchar"
-					},
-					{
-						"name": "Tier_Classification",
-						"type": "varchar"
-					},
-					{
-						"name": "Comments",
-						"type": "varchar"
-					},
-					{
-						"name": "Business_Justification",
-						"type": "varchar"
-					},
-					{
-						"name": "Attachments",
-						"type": "varchar"
-					},
-					{
-						"name": "Status",
-						"type": "varchar"
-					},
-					{
-						"name": "Field_Engineer",
-						"type": "varchar"
-					},
-					{
-						"name": "Field_Engineer_Remarks",
-						"type": "varchar"
-					},
-					{
-						"name": "Approver_1_Name",
-						"type": "varchar"
-					},
-					{
-						"name": "Approver_1_Remarks",
-						"type": "varchar"
-					},
-					{
-						"name": "Approver_1_Timestamp",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
-					},
-					{
-						"name": "Approver_2_Name",
-						"type": "varchar"
-					},
-					{
-						"name": "Approver_2_Remarks",
-						"type": "varchar"
-					},
-					{
-						"name": "Approver_2_Timestamp",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
-					},
-					{
-						"name": "Created_By",
-						"type": "varchar"
-					},
-					{
-						"name": "Created_Timestamp",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
-					},
-					{
-						"name": "Updated_By",
-						"type": "varchar"
-					},
-					{
-						"name": "Updated_Timestamp",
-						"type": "datetime",
-						"precision": 23,
-						"scale": 3
-					}
-				],
-				"typeProperties": {
-					"schema": "CP_OLTP",
-					"table": "CP_Area_Config_Master"
-				}
-			},
-			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
 			]
 		},
@@ -708,14 +344,14 @@
 					"sources": [
 						{
 							"dataset": {
-								"referenceName": "Source_Table",
+								"referenceName": "AzureSqlTable1",
 								"type": "DatasetReference"
 							},
-							"name": "OLTPDataSource"
+							"name": "Source"
 						},
 						{
 							"dataset": {
-								"referenceName": "AzureSqlTable1",
+								"referenceName": "AzureSqlTable2",
 								"type": "DatasetReference"
 							},
 							"name": "Lookuptable"
@@ -727,33 +363,15 @@
 								"referenceName": "AzureSqlTable2",
 								"type": "DatasetReference"
 							},
-							"name": "Destination",
-							"description": "Destination"
+							"name": "sink"
 						}
 					],
 					"transformations": [
 						{
-							"name": "StatusFilter"
+							"name": "lkp"
 						},
 						{
-							"name": "FormatString",
-							"description": "This Derived Column activity ensures consistent formatting by trimming leading and trailing spaces from all string columns. Additionally, it capitalizes only the first letter of each value while keeping the rest of the text unchanged. This transformation helps maintain standardized data before further processing\n"
-						},
-						{
-							"name": "LookupExistingRecords"
-						},
-						{
-							"name": "DetectChangesAlterRow"
-						},
-						{
-							"name": "surrogateKey1"
-						},
-						{
-							"name": "SelectBeforeSurrogateKey"
-						},
-						{
-							"name": "DefaultValues",
-							"description": "DefaultValues"
+							"name": "CheckColumnChanges"
 						}
 					],
 					"scriptLines": [
@@ -788,7 +406,7 @@
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     isolationLevel: 'READ_UNCOMMITTED',",
-						"     format: 'table') ~> OLTPDataSource",
+						"     format: 'table') ~> Source",
 						"source(output(",
 						"          Business_Unit as string,",
 						"          Block_ID as string,",
@@ -817,108 +435,28 @@
 						"          Created_Timestamp as timestamp,",
 						"          Updated_By as string,",
 						"          Updated_Timestamp as timestamp,",
-						"          Business_Unit_ID as integer",
+						"          Business_Unit_ID as integer,",
+						"          Business_Unit_Key as integer",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     isolationLevel: 'READ_UNCOMMITTED',",
 						"     format: 'table') ~> Lookuptable",
-						"FormatString filter(Status == 'Approved') ~> StatusFilter",
-						"OLTPDataSource derive(Block_ID = upper(left(trim(Block_ID), 1)) + right(trim(Block_ID), length(trim(Block_ID)) - 1),",
-						"          Business_Unit = upper(left(trim(Business_Unit), 1)) + right(trim(Business_Unit), length(trim(Business_Unit)) - 1),",
-						"          Area_Classification_1 = upper(left(trim(Area_Classification_1), 1)) + right(trim(Area_Classification_1), length(trim(Area_Classification_1)) - 1),",
-						"          Area_Classification_2 = upper(left(trim(Area_Classification_2), 1)) + right(trim(Area_Classification_2), length(trim(Area_Classification_2)) - 1),",
-						"          Plant_ID = upper(left(trim(Plant_ID), 1)) + right(trim(Plant_ID), length(trim(Plant_ID)) - 1),",
-						"          Plant_ID2 = upper(left(trim(Plant_ID2), 1)) + right(trim(Plant_ID2), length(trim(Plant_ID2)) - 1),",
-						"          Tier_Classification = upper(left(trim(Tier_Classification), 1)) + right(trim(Tier_Classification), length(trim(Tier_Classification)) - 1),",
-						"          Asset_Owner = upper(left(trim(Asset_Owner), 1)) + right(trim(Asset_Owner), length(trim(Asset_Owner)) - 1),",
-						"          Cost_Center = upper(left(trim(Cost_Center), 1)) + right(trim(Cost_Center), length(trim(Cost_Center)) - 1),",
-						"          Comments = upper(left(trim(Comments), 1)) + right(trim(Comments), length(trim(Comments)) - 1),",
-						"          Field_Engineer = upper(left(trim(Field_Engineer), 1)) + right(trim(Field_Engineer), length(trim(Field_Engineer)) - 1),",
-						"          Approver_1_Name = upper(left(trim(Approver_1_Name), 1)) + right(trim(Approver_1_Name), length(trim(Approver_1_Name)) - 1),",
-						"          Field_Engineer_Remarks = upper(left(trim(Field_Engineer_Remarks), 1)) + right(trim(Field_Engineer_Remarks), length(trim(Field_Engineer_Remarks)) - 1),",
-						"          Approver_1_Remarks = upper(left(trim(Approver_1_Remarks), 1)) + right(trim(Approver_1_Remarks), length(trim(Approver_1_Remarks)) - 1),",
-						"          Approver_2_Name = upper(left(trim(Approver_2_Name), 1)) + right(trim(Approver_2_Name), length(trim(Approver_2_Name)) - 1),",
-						"          Approver_2_Remarks = upper(left(trim(Approver_2_Remarks), 1)) + right(trim(Approver_2_Remarks), length(trim(Approver_2_Remarks)) - 1),",
-						"          Business_Justification = upper(left(trim(Business_Justification), 1)) + right(trim(Business_Justification), length(trim(Business_Justification)) - 1)) ~> FormatString",
-						"StatusFilter, Lookuptable lookup(OLTPDataSource@Business_Unit_ID == Lookuptable@Business_Unit_ID",
-						"     && FormatString@Business_Unit == Lookuptable@Business_Unit",
-						"     && FormatString@Block_ID == Lookuptable@Block_ID",
-						"     && FormatString@Area_Classification_1 == Lookuptable@Area_Classification_1",
-						"     && FormatString@Area_Classification_2 == Lookuptable@Area_Classification_2",
-						"     && FormatString@Plant_ID == Lookuptable@Plant_ID",
-						"     && FormatString@Plant_ID2 == Lookuptable@Plant_ID2",
-						"     && FormatString@Cost_Center == Lookuptable@Cost_Center,",
-						"     multiple: true,",
-						"     broadcast: 'auto')~> LookupExistingRecords",
-						"LookupExistingRecords alterRow(insertIf(isNull(Lookuptable@Business_Unit_ID)),",
-						"     updateIf(!isNull(Lookuptable@Business_Unit_ID) && (     iif(isNull(FormatString@Business_Unit), '', FormatString@Business_Unit) != iif(isNull(Lookuptable@Business_Unit), '', Lookuptable@Business_Unit) ))) ~> DetectChangesAlterRow",
-						"SelectBeforeSurrogateKey keyGenerate(output(Business_Unit_key as long),",
-						"     startAt: 1L,",
-						"     stepValue: 1L) ~> surrogateKey1",
-						"DetectChangesAlterRow select(mapColumn(",
-						"          Business_Unit_ID = OLTPDataSource@Business_Unit_ID,",
-						"          Business_Unit = FormatString@Business_Unit,",
-						"          Block_ID = FormatString@Block_ID,",
-						"          Area_Classification_1 = FormatString@Area_Classification_1,",
-						"          Area_Classification_2 = FormatString@Area_Classification_2,",
-						"          Plant_ID = FormatString@Plant_ID,",
-						"          Plant_ID2 = FormatString@Plant_ID2,",
-						"          Asset_Owner = FormatString@Asset_Owner,",
-						"          Cost_Center = FormatString@Cost_Center,",
-						"          Tier_Classification = FormatString@Tier_Classification,",
-						"          Comments = FormatString@Comments,",
-						"          Business_Justification = FormatString@Business_Justification,",
-						"          Attachments = OLTPDataSource@Attachments,",
-						"          Status,",
-						"          Field_Engineer,",
-						"          Field_Engineer_Remarks = FormatString@Field_Engineer_Remarks,",
-						"          Approver_1_Name = FormatString@Approver_1_Name,",
-						"          Approver_1_Remarks = FormatString@Approver_1_Remarks,",
-						"          Approver_1_Timestamp = OLTPDataSource@Approver_1_Timestamp,",
-						"          Approver_2_Name = FormatString@Approver_2_Name,",
-						"          Approver_2_Remarks = FormatString@Approver_2_Remarks,",
-						"          Approver_2_Timestamp = OLTPDataSource@Approver_2_Timestamp,",
-						"          Created_By = OLTPDataSource@Created_By,",
-						"          Created_Timestamp = OLTPDataSource@Created_Timestamp,",
-						"          Updated_By = OLTPDataSource@Updated_By,",
-						"          Updated_Timestamp = OLTPDataSource@Updated_Timestamp,",
-						"          Business_Unit = Lookuptable@Business_Unit,",
-						"          Block_ID = Lookuptable@Block_ID,",
-						"          Area_Classification_1 = Lookuptable@Area_Classification_1,",
-						"          Area_Classification_2 = Lookuptable@Area_Classification_2,",
-						"          Plant_ID = Lookuptable@Plant_ID,",
-						"          Plant_ID2 = Lookuptable@Plant_ID2,",
-						"          Asset_Owner = Lookuptable@Asset_Owner,",
-						"          Cost_Center = Lookuptable@Cost_Center,",
-						"          Tier_Classification = Lookuptable@Tier_Classification,",
-						"          Comments = Lookuptable@Comments,",
-						"          Business_Justification = Lookuptable@Business_Justification,",
-						"          Attachments = Lookuptable@Attachments,",
-						"          Begin_Date,",
-						"          End_Date,",
-						"          Current_Rec_In,",
-						"          Field_Engineer_Name,",
-						"          Field_Engineer_Remarks = Lookuptable@Field_Engineer_Remarks,",
-						"          Approver_1_Name = Lookuptable@Approver_1_Name,",
-						"          Approver_1_Remarks = Lookuptable@Approver_1_Remarks,",
-						"          Approver_1_Timestamp = Lookuptable@Approver_1_Timestamp,",
-						"          Approver_2_Name = Lookuptable@Approver_2_Name,",
-						"          Approver_2_Remarks = Lookuptable@Approver_2_Remarks,",
-						"          Approver_2_Timestamp = Lookuptable@Approver_2_Timestamp,",
-						"          Created_By = Lookuptable@Created_By,",
-						"          Created_Timestamp = Lookuptable@Created_Timestamp,",
-						"          Updated_By = Lookuptable@Updated_By,",
-						"          Updated_Timestamp = Lookuptable@Updated_Timestamp,",
-						"          Business_Unit_ID = Lookuptable@Business_Unit_ID",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> SelectBeforeSurrogateKey",
-						"surrogateKey1 derive(Begin_Date = toUTC(currentTimestamp()),",
-						"          End_Date = toDate('9999-12-31', 'yyyy-MM-dd'),",
-						"          Current_Rec_In = 1) ~> DefaultValues",
-						"DefaultValues sink(allowSchemaDrift: true,",
-						"     validateSchema: true,",
+						"Source, Lookuptable lookup(Source@Business_Unit_ID == Lookuptable@Business_Unit_ID",
+						"     && Source@Business_Unit == Lookuptable@Business_Unit",
+						"     && Source@Block_ID == Lookuptable@Block_ID",
+						"     && Source@Area_Classification_1 == Lookuptable@Area_Classification_1",
+						"     && Source@Area_Classification_2 == Lookuptable@Area_Classification_2",
+						"     && Source@Plant_ID == Lookuptable@Plant_ID",
+						"     && Source@Plant_ID2 == Lookuptable@Plant_ID2",
+						"     && Source@Asset_Owner == Lookuptable@Asset_Owner",
+						"     && Source@Cost_Center == Lookuptable@Cost_Center,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lkp",
+						"lkp alterRow(insertIf(!isNull(Lookuptable@Business_Unit_ID)&&(Source@Business_Unit!=Lookuptable@Business_Unit||Source@Block_ID!=Lookuptable@Block_ID||Source@Area_Classification_1!=Lookuptable@Area_Classification_1||Source@Area_Classification_2!=Lookuptable@Area_Classification_2||Source@Plant_ID!=Lookuptable@Plant_ID||Source@Plant_ID2!=Lookuptable@Plant_ID2||Source@Asset_Owner!=Lookuptable@Asset_Owner||Source@Cost_Center!=Lookuptable@Cost_Center))) ~> CheckColumnChanges",
+						"CheckColumnChanges sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
 						"     input(",
 						"          Business_Unit as string,",
 						"          Block_ID as string,",
@@ -952,61 +490,42 @@
 						"     ),",
 						"     deletable:false,",
 						"     insertable:true,",
-						"     updateable:true,",
-						"     upsertable:false,",
+						"     updateable:false,",
+						"     upsertable:true,",
 						"     keys:['Business_Unit_ID'],",
 						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
 						"     errorHandlingOption: 'stopOnFirstError',",
 						"     mapColumn(",
-						"          Business_Unit_Key = Business_Unit_key,",
-						"          Business_Unit_ID,",
-						"          Business_Unit,",
-						"          Block_ID,",
-						"          Area_Classification_1,",
-						"          Area_Classification_2,",
-						"          Plant_ID,",
-						"          Plant_ID2,",
-						"          Asset_Owner,",
-						"          Cost_Center,",
-						"          Tier_Classification,",
-						"          Comments,",
-						"          Business_Justification,",
-						"          Attachments,",
-						"          Begin_Date,",
-						"          End_Date,",
-						"          Current_Rec_In,",
-						"          Field_Engineer_Name,",
-						"          Field_Engineer_Remarks,",
-						"          Approver_1_Name,",
-						"          Approver_1_Remarks,",
-						"          Approver_1_Timestamp,",
-						"          Approver_2_Name,",
-						"          Approver_2_Remarks,",
-						"          Approver_2_Timestamp,",
-						"          Created_By,",
-						"          Created_Timestamp,",
-						"          Updated_By,",
-						"          Updated_Timestamp",
-						"     )) ~> Destination"
+						"          Business_Unit = Source@Business_Unit,",
+						"          Block_ID = Source@Block_ID,",
+						"          Area_Classification_1 = Source@Area_Classification_1,",
+						"          Area_Classification_2 = Source@Area_Classification_2,",
+						"          Plant_ID = Source@Plant_ID,",
+						"          Plant_ID2 = Source@Plant_ID2,",
+						"          Asset_Owner = Source@Asset_Owner,",
+						"          Cost_Center = Source@Cost_Center,",
+						"          Tier_Classification = Source@Tier_Classification,",
+						"          Comments = Source@Comments,",
+						"          Business_Justification = Source@Business_Justification,",
+						"          Attachments = Source@Attachments,",
+						"          Business_Unit_ID = Source@Business_Unit_ID",
+						"     )) ~> sink"
 					]
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/Source_Table')]",
 				"[concat(variables('factoryId'), '/datasets/AzureSqlTable1')]",
 				"[concat(variables('factoryId'), '/datasets/AzureSqlTable2')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/CP_PL_AreaConfig')]",
+			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "AreaConfig",
+						"name": "CP_DF_AreaConfig",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
@@ -1023,9 +542,9 @@
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
-									"OLTPDataSource": {},
+									"Source": {},
 									"Lookuptable": {},
-									"Destination": {}
+									"sink": {}
 								}
 							},
 							"staging": {},
@@ -1040,8 +559,7 @@
 				"policy": {
 					"elapsedTimeMetric": {}
 				},
-				"annotations": [],
-				"lastPublishTime": "2025-05-17T18:41:57Z"
+				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/CP_DF_AreaConfig')]"
