@@ -171,7 +171,7 @@
 				"          Comments = Source@Comments,",
 				"          Business_Justification = Source@Business_Justification,",
 				"          Attachments = Source@Attachments,",
-				"          Business_Unit_ID = Source@Business_Unit_ID",
+				"          Business_Unit_ID = Lookuptable@Business_Unit_ID",
 				"     )) ~> sink"
 			]
 		}
