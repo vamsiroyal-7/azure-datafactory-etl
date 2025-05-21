@@ -116,8 +116,7 @@
 				"     multiple: false,",
 				"     pickup: 'any',",
 				"     broadcast: 'auto')~> lkp",
-				"lkp alterRow(insertIf(isNull(Lookuptable@Business_Unit_ID)",
-				")) ~> CheckColumnChanges",
+				"lkp alterRow(insertIf(isNull(Lookuptable@Business_Unit_ID) ||  (     Source@Business_Unit_ID != Lookuptable@Business_Unit_ID &&     (         Source@Business_Unit != Lookuptable@Business_Unit ||         Source@Block_ID != Lookuptable@Block_ID ||         Source@Area_Classification_1 != Lookuptable@Area_Classification_1 ||         Source@Area_Classification_2 != Lookuptable@Area_Classification_2 ||         Source@Plant_ID != Lookuptable@Plant_ID ||         Source@Plant_ID2 != Lookuptable@Plant_ID2 ||         Source@Asset_Owner != Lookuptable@Asset_Owner ||         Source@Cost_Center != Lookuptable@Cost_Center     ) ))) ~> CheckColumnChanges",
 				"CheckColumnChanges sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
@@ -171,7 +170,7 @@
 				"          Comments = Source@Comments,",
 				"          Business_Justification = Source@Business_Justification,",
 				"          Attachments = Source@Attachments,",
-				"          Business_Unit_ID = Lookuptable@Business_Unit_ID",
+				"          Business_Unit_ID = Source@Business_Unit_ID",
 				"     )) ~> sink"
 			]
 		}
