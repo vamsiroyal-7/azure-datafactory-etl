@@ -1,0 +1,130 @@
+{
+	"name": "AzureSqlTable1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "Business_Unit_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Business_Unit",
+				"type": "varchar"
+			},
+			{
+				"name": "Block_ID",
+				"type": "varchar"
+			},
+			{
+				"name": "Area_Classification_1",
+				"type": "varchar"
+			},
+			{
+				"name": "Area_Classification_2",
+				"type": "varchar"
+			},
+			{
+				"name": "Plant_ID",
+				"type": "varchar"
+			},
+			{
+				"name": "Plant_ID2",
+				"type": "varchar"
+			},
+			{
+				"name": "Asset_Owner",
+				"type": "varchar"
+			},
+			{
+				"name": "Cost_Center",
+				"type": "varchar"
+			},
+			{
+				"name": "Tier_Classification",
+				"type": "varchar"
+			},
+			{
+				"name": "Comments",
+				"type": "varchar"
+			},
+			{
+				"name": "Business_Justification",
+				"type": "varchar"
+			},
+			{
+				"name": "Attachments",
+				"type": "varchar"
+			},
+			{
+				"name": "Status",
+				"type": "varchar"
+			},
+			{
+				"name": "Field_Engineer",
+				"type": "varchar"
+			},
+			{
+				"name": "Field_Engineer_Remarks",
+				"type": "varchar"
+			},
+			{
+				"name": "Approver_1_Name",
+				"type": "varchar"
+			},
+			{
+				"name": "Approver_1_Remarks",
+				"type": "varchar"
+			},
+			{
+				"name": "Approver_1_Timestamp",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "Approver_2_Name",
+				"type": "varchar"
+			},
+			{
+				"name": "Approver_2_Remarks",
+				"type": "varchar"
+			},
+			{
+				"name": "Approver_2_Timestamp",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "Created_By",
+				"type": "varchar"
+			},
+			{
+				"name": "Created_Timestamp",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "Updated_By",
+				"type": "varchar"
+			},
+			{
+				"name": "Updated_Timestamp",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			}
+		],
+		"typeProperties": {
+			"schema": "CP_OLTP",
+			"table": "CP_Area_Config_Master"
+		}
+	}
+}
