@@ -9,7 +9,7 @@
 						"referenceName": "Source",
 						"type": "DatasetReference"
 					},
-					"name": "source"
+					"name": "SourceTable"
 				},
 				{
 					"dataset": {
@@ -25,15 +25,15 @@
 						"referenceName": "Destination",
 						"type": "DatasetReference"
 					},
-					"name": "Destination"
+					"name": "DestinationTable"
 				}
 			],
 			"transformations": [
 				{
-					"name": "AlterRow"
+					"name": "LookupDestination"
 				},
 				{
-					"name": "LKP"
+					"name": "SetRowOperations"
 				}
 			],
 			"scriptLines": [
@@ -46,8 +46,9 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     inferDriftedColumnTypes: true,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     format: 'table') ~> source",
+				"     format: 'table') ~> SourceTable",
 				"source(output(",
 				"          ID as integer,",
 				"          Name as string,",
@@ -59,22 +60,17 @@
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
 				"     format: 'table') ~> Lookup",
-				"LKP alterRow(insertIf(isNull(Lookup@ID)),",
-				"     updateIf(!isNull(Lookup@ID)",
-				"&& (source@Name != Lookup@Name ",
-				"|| source@Age != Lookup@Age ",
-				"|| source@City != Lookup@City ",
-				"|| source@Salary != Lookup@Salary)",
-				")) ~> AlterRow",
-				"source, Lookup lookup(source@ID == Lookup@ID",
-				"     && source@Name == Lookup@Name",
-				"     && source@Age == Lookup@Age",
-				"     && source@City == Lookup@City",
-				"     && source@Salary == Lookup@Salary,",
+				"SourceTable, Lookup lookup(SourceTable@ID == Lookup@ID,",
 				"     multiple: false,",
 				"     pickup: 'any',",
-				"     broadcast: 'auto')~> LKP",
-				"AlterRow sink(allowSchemaDrift: true,",
+				"     broadcast: 'auto')~> LookupDestination",
+				"LookupDestination alterRow(insertIf(isNull(Lookup@ID)),",
+				"     updateIf(!isNull(Lookup@ID) && ",
+				"(SourceTable@Name != Lookup@Name || ",
+				" SourceTable@Age != Lookup@Age || ",
+				" SourceTable@City != Lookup@City || ",
+				" SourceTable@Salary != Lookup@Salary))) ~> SetRowOperations",
+				"SetRowOperations sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          ID as integer,",
@@ -91,7 +87,7 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> Destination"
+				"     errorHandlingOption: 'stopOnFirstError') ~> DestinationTable"
 			]
 		}
 	}
