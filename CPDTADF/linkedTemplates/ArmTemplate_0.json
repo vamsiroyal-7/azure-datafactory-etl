@@ -647,6 +647,9 @@
 						},
 						{
 							"name": "SetRowOperations"
+						},
+						{
+							"name": "FilterActionableRows"
 						}
 					],
 					"scriptLines": [
@@ -679,7 +682,13 @@
 						"     broadcast: 'auto')~> LookupDestination",
 						"LookupDestination alterRow(insertIf(isNull(Lookup@ID)),",
 						"     updateIf(!isNull(Lookup@ID)&&(SourceTable@Name!=Lookup@Name||SourceTable@Age!=Lookup@Age||SourceTable@City!=Lookup@City||SourceTable@Salary!=Lookup@Salary))) ~> SetRowOperations",
-						"SetRowOperations sink(allowSchemaDrift: true,",
+						"SetRowOperations filter(isNull(Lookup@ID) || ",
+						"(!isNull(Lookup@ID) && ",
+						" (SourceTable@Name != Lookup@Name || ",
+						"  SourceTable@Age != Lookup@Age || ",
+						"  SourceTable@City != Lookup@City || ",
+						"  SourceTable@Salary != Lookup@Salary))) ~> FilterActionableRows",
+						"FilterActionableRows sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
 						"          ID as integer,",
@@ -697,6 +706,116 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     errorHandlingOption: 'stopOnFirstError') ~> DestinationTable"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Source')]",
+				"[concat(variables('factoryId'), '/datasets/Destination')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Upsert_DC')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Source",
+								"type": "DatasetReference"
+							},
+							"name": "SourceTable"
+						},
+						{
+							"dataset": {
+								"referenceName": "Destination",
+								"type": "DatasetReference"
+							},
+							"name": "Lookup"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Destination",
+								"type": "DatasetReference"
+							},
+							"name": "Destination"
+						}
+					],
+					"transformations": [
+						{
+							"name": "LookupDestination"
+						},
+						{
+							"name": "AddOperationType"
+						},
+						{
+							"name": "ExcludeSkipRows"
+						},
+						{
+							"name": "AlterRowTransformation"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          ID as integer,",
+						"          Name as string,",
+						"          Age as integer,",
+						"          City as string,",
+						"          Salary as decimal(10,2)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> SourceTable",
+						"source(output(",
+						"          ID as integer,",
+						"          Name as string,",
+						"          Age as integer,",
+						"          City as string,",
+						"          Salary as decimal(10,2)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> Lookup",
+						"SourceTable, Lookup lookup(SourceTable@ID == Lookup@ID,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> LookupDestination",
+						"LookupDestination derive(ActionType = case(",
+						"    isNull(Lookup@ID), 'INSERT',",
+						"    SourceTable@Name != Lookup@Name || ",
+						"    SourceTable@Age != Lookup@Age || ",
+						"    SourceTable@City != Lookup@City || ",
+						"    SourceTable@Salary != Lookup@Salary, 'UPDATE',",
+						"    'SKIP'",
+						")) ~> AddOperationType",
+						"AddOperationType filter(ActionType != 'SKIP') ~> ExcludeSkipRows",
+						"ExcludeSkipRows alterRow(insertIf(ActionType=='INSERT'),",
+						"     updateIf(ActionType=='UPDATE')) ~> AlterRowTransformation",
+						"AlterRowTransformation sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          ID as integer,",
+						"          Name as string,",
+						"          Age as integer,",
+						"          City as string,",
+						"          Salary as decimal(10,2)",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:true,",
+						"     keys:['ID'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> Destination"
 					]
 				}
 			},
