@@ -53,6 +53,7 @@
 								"parameters": {},
 								"datasetParameters": {
 									"source": {},
+									"Lookup": {},
 									"Destination": {}
 								}
 							},
@@ -716,6 +717,13 @@
 								"type": "DatasetReference"
 							},
 							"name": "source"
+						},
+						{
+							"dataset": {
+								"referenceName": "Destination",
+								"type": "DatasetReference"
+							},
+							"name": "Lookup"
 						}
 					],
 					"sinks": [
@@ -730,6 +738,9 @@
 					"transformations": [
 						{
 							"name": "AlterRow"
+						},
+						{
+							"name": "LKP"
 						}
 					],
 					"scriptLines": [
@@ -744,8 +755,27 @@
 						"     validateSchema: false,",
 						"     isolationLevel: 'READ_UNCOMMITTED',",
 						"     format: 'table') ~> source",
-						"source alterRow(insertIf(ID!=ID),",
-						"     updateIf(ID==ID&&(Name!=Name||Age!=Age||City!=City||Salary!=Salary))) ~> AlterRow",
+						"source(output(",
+						"          ID as integer,",
+						"          Name as string,",
+						"          Age as integer,",
+						"          City as string,",
+						"          Salary as decimal(10,2)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> Lookup",
+						"LKP alterRow(insertIf(isNull(Lookup@ID)),",
+						"     updateIf(!isNull(Lookup@ID)&&(source@Name!=Lookup@Name||source@Age!=Lookup@Age||source@City!=Lookup@City||source@Salary!=Lookup@Salary))) ~> AlterRow",
+						"source, Lookup lookup(source@ID == Lookup@ID",
+						"     && source@Name == Lookup@Name",
+						"     && source@Age == Lookup@Age",
+						"     && source@City == Lookup@City",
+						"     && source@Salary == Lookup@Salary,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> LKP",
 						"AlterRow sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
@@ -763,14 +793,7 @@
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          ID,",
-						"          Name,",
-						"          Age,",
-						"          City,",
-						"          Salary",
-						"     )) ~> Destination"
+						"     errorHandlingOption: 'stopOnFirstError') ~> Destination"
 					]
 				}
 			},
