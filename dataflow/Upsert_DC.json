@@ -1,5 +1,5 @@
 {
-	"name": "Upsert",
+	"name": "Upsert_DC",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
@@ -25,7 +25,7 @@
 						"referenceName": "Destination",
 						"type": "DatasetReference"
 					},
-					"name": "DestinationTable"
+					"name": "Destination"
 				}
 			],
 			"transformations": [
@@ -33,10 +33,13 @@
 					"name": "LookupDestination"
 				},
 				{
-					"name": "SetRowOperations"
+					"name": "AddOperationType"
 				},
 				{
-					"name": "FilterActionableRows"
+					"name": "ExcludeSkipRows"
+				},
+				{
+					"name": "AlterRowTransformation"
 				}
 			],
 			"scriptLines": [
@@ -49,7 +52,6 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     inferDriftedColumnTypes: true,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
 				"     format: 'table') ~> SourceTable",
 				"source(output(",
@@ -67,16 +69,18 @@
 				"     multiple: false,",
 				"     pickup: 'any',",
 				"     broadcast: 'auto')~> LookupDestination",
-				"LookupDestination alterRow(insertIf(isNull(Lookup@ID)),",
-				"     updateIf(!isNull(Lookup@ID)&&(SourceTable@Name!=Lookup@Name||SourceTable@Age!=Lookup@Age||SourceTable@City!=Lookup@City||SourceTable@Salary!=Lookup@Salary))) ~> SetRowOperations",
-				"SetRowOperations filter(isNull(Lookup@ID) || ",
-				"(!isNull(Lookup@ID) && ",
-				" (SourceTable@Name != Lookup@Name || ",
-				"  SourceTable@Age != Lookup@Age || ",
-				"  SourceTable@City != Lookup@City || ",
-				"  SourceTable@Salary != Lookup@Salary))",
-				") ~> FilterActionableRows",
-				"FilterActionableRows sink(allowSchemaDrift: true,",
+				"LookupDestination derive(ActionType = case(",
+				"    isNull(Lookup@ID), 'INSERT',",
+				"    SourceTable@Name != Lookup@Name || ",
+				"    SourceTable@Age != Lookup@Age || ",
+				"    SourceTable@City != Lookup@City || ",
+				"    SourceTable@Salary != Lookup@Salary, 'UPDATE',",
+				"    'SKIP'",
+				")) ~> AddOperationType",
+				"AddOperationType filter(ActionType != 'SKIP') ~> ExcludeSkipRows",
+				"ExcludeSkipRows alterRow(insertIf(ActionType == 'INSERT'),",
+				"     updateIf(ActionType == 'UPDATE')) ~> AlterRowTransformation",
+				"AlterRowTransformation sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          ID as integer,",
@@ -87,13 +91,13 @@
 				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",
-				"     updateable:true,",
-				"     upsertable:false,",
+				"     updateable:false,",
+				"     upsertable:true,",
 				"     keys:['ID'],",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> DestinationTable"
+				"     errorHandlingOption: 'stopOnFirstError') ~> Destination"
 			]
 		}
 	}
