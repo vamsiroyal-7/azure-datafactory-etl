@@ -1,0 +1,85 @@
+{
+	"name": "Upsert",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Source",
+						"type": "DatasetReference"
+					},
+					"name": "source"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Destination",
+						"type": "DatasetReference"
+					},
+					"name": "Destination"
+				}
+			],
+			"transformations": [
+				{
+					"name": "AlterRow"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ID as integer,",
+				"          Name as string,",
+				"          Age as integer,",
+				"          City as string,",
+				"          Salary as decimal(10,2)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source",
+				"source alterRow(insertIf(iif(",
+				"    isNull(ID), ",
+				"    true(), ",
+				"    false()",
+				")",
+				"),",
+				"     updateIf(iif(",
+				"    ID == ID ",
+				"    && (Name != Name ",
+				"    || Age != Age ",
+				"    || City != City ",
+				"    || Salary != Salary),",
+				"    true(),",
+				"    false()",
+				")",
+				")) ~> AlterRow",
+				"AlterRow sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          ID as integer,",
+				"          Name as string,",
+				"          Age as integer,",
+				"          City as string,",
+				"          Salary as decimal(10,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:['ID'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          ID,",
+				"          Name,",
+				"          Age,",
+				"          City,",
+				"          Salary",
+				"     )) ~> Destination"
+			]
+		}
+	}
+}
