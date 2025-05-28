@@ -704,6 +704,109 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/CheckSum')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Source",
+								"type": "DatasetReference"
+							},
+							"name": "SourceTable"
+						},
+						{
+							"dataset": {
+								"referenceName": "Destination",
+								"type": "DatasetReference"
+							},
+							"name": "Lookup"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Destination",
+								"type": "DatasetReference"
+							},
+							"name": "Sink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "LKP"
+						},
+						{
+							"name": "HashFilter"
+						},
+						{
+							"name": "AlterRow"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          ID as integer,",
+						"          Name as string,",
+						"          Age as integer,",
+						"          City as string,",
+						"          Salary as decimal(10,2),",
+						"          SourceHash as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT ID, Name, Age, City, Salary,\\n       CHECKSUM(ID, Name, Age, City, Salary) AS SourceHash\\nFROM Source',",
+						"     format: 'query') ~> SourceTable",
+						"source(output(",
+						"          ID as integer,",
+						"          Name as string,",
+						"          Age as integer,",
+						"          City as string,",
+						"          Salary as decimal(10,2),",
+						"          DestHash as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT ID, Name, Age, City, Salary,\\n       CHECKSUM(ID, Name, Age, City, Salary) AS DestHash  \\nFROM Destination',",
+						"     format: 'query') ~> Lookup",
+						"SourceTable, Lookup lookup(SourceTable@ID == Lookup@ID,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> LKP",
+						"LKP filter(isNull(Lookup@ID) || (SourceHash != DestHash)) ~> HashFilter",
+						"HashFilter alterRow(insertIf(isNull(Lookup@ID)),",
+						"     updateIf(!isNull(Lookup@ID)&&(SourceHash!=DestHash))) ~> AlterRow",
+						"AlterRow sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          ID as integer,",
+						"          Name as string,",
+						"          Age as integer,",
+						"          City as string,",
+						"          Salary as decimal(10,2)",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:true,",
+						"     upsertable:false,",
+						"     keys:['ID'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> Sink"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Source')]",
+				"[concat(variables('factoryId'), '/datasets/Destination')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Upsert')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
