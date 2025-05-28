@@ -19,13 +19,24 @@
 					"name": "Lookup"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Destination",
+						"type": "DatasetReference"
+					},
+					"name": "Sink"
+				}
+			],
 			"transformations": [
 				{
 					"name": "LKP"
 				},
 				{
-					"name": "CheckSum"
+					"name": "HashFilter"
+				},
+				{
+					"name": "AlterRow"
 				}
 			],
 			"scriptLines": [
@@ -34,43 +45,52 @@
 				"          Name as string,",
 				"          Age as integer,",
 				"          City as string,",
-				"          Salary as decimal(10,2)",
+				"          Salary as decimal(10,2),",
+				"          SourceHash as integer",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     format: 'table') ~> SourceTable",
+				"     query: 'SELECT ID, Name, Age, City, Salary,\\n       CHECKSUM(ID, Name, Age, City, Salary) AS SourceHash\\nFROM Source',",
+				"     format: 'query') ~> SourceTable",
 				"source(output(",
+				"          ID as integer,",
+				"          Name as string,",
+				"          Age as integer,",
+				"          City as string,",
+				"          Salary as decimal(10,2),",
+				"          DestHash as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT ID, Name, Age, City, Salary,\\n       CHECKSUM(ID, Name, Age, City, Salary) AS DestHash  \\nFROM Destination',",
+				"     format: 'query') ~> Lookup",
+				"SourceTable, Lookup lookup(SourceTable@ID == Lookup@ID,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> LKP",
+				"LKP filter(isNull(Lookup@ID) || (SourceHash != DestHash)) ~> HashFilter",
+				"HashFilter alterRow(insertIf(isNull(Lookup@ID)),",
+				"     updateIf(!isNull(Lookup@ID) && (SourceHash != DestHash))) ~> AlterRow",
+				"AlterRow sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
 				"          ID as integer,",
 				"          Name as string,",
 				"          Age as integer,",
 				"          City as string,",
 				"          Salary as decimal(10,2)",
 				"     ),",
-				"     allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     format: 'table') ~> Lookup",
-				"SourceTable, Lookup lookup(SourceTable@ID == Lookup@ID,",
-				"     multiple: false,",
-				"     pickup: 'any',",
-				"     broadcast: 'auto')~> LKP",
-				"LKP derive(SourceChecksum = crc32(concat(",
-				"    toString(coalesce(SourceTable@ID,'')), '|',",
-				"    toString(coalesce(SourceTable@Name,'')), '|',",
-				"    toString(coalesce(SourceTable@Age,'')), '|',",
-				"    toString(coalesce(SourceTable@City,'')), '|',",
-				"    toString(coalesce(SourceTable@Salary,''))",
-				")),",
-				"          DestinationChecksum = case(isNull(Lookup@ID), 0,",
-				"    toInteger(crc32(concat(",
-				"        toString(Lookup@ID), '|',",
-				"        toString(Lookup@Name), '|',",
-				"        toString(Lookup@Age), '|',",
-				"        toString(Lookup@City), '|',",
-				"        toString(Lookup@Salary)",
-				"    )))",
-				")) ~> CheckSum"
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:['ID'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> Sink"
 			]
 		}
 	}
