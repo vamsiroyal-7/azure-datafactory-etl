@@ -1,0 +1,77 @@
+{
+	"name": "CheckSum",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Source",
+						"type": "DatasetReference"
+					},
+					"name": "SourceTable"
+				},
+				{
+					"dataset": {
+						"referenceName": "Destination",
+						"type": "DatasetReference"
+					},
+					"name": "Lookup"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "LKP"
+				},
+				{
+					"name": "CheckSum"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ID as integer,",
+				"          Name as string,",
+				"          Age as integer,",
+				"          City as string,",
+				"          Salary as decimal(10,2)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> SourceTable",
+				"source(output(",
+				"          ID as integer,",
+				"          Name as string,",
+				"          Age as integer,",
+				"          City as string,",
+				"          Salary as decimal(10,2)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> Lookup",
+				"SourceTable, Lookup lookup(SourceTable@ID == Lookup@ID,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> LKP",
+				"LKP derive(SourceChecksum = crc32(concat(",
+				"    toString(coalesce(SourceTable@ID,'')), '|',",
+				"    toString(coalesce(SourceTable@Name,'')), '|',",
+				"    toString(coalesce(SourceTable@Age,'')), '|',",
+				"    toString(coalesce(SourceTable@City,'')), '|',",
+				"    toString(coalesce(SourceTable@Salary,''))",
+				")),",
+				"          DestinationChecksum = case(isNull(Lookup@ID), 0,",
+				"    toInteger(crc32(concat(",
+				"        toString(Lookup@ID), '|',",
+				"        toString(Lookup@Name), '|',",
+				"        toString(Lookup@Age), '|',",
+				"        toString(Lookup@City), '|',",
+				"        toString(Lookup@Salary)",
+				"    )))",
+				")) ~> CheckSum"
+			]
+		}
+	}
+}
