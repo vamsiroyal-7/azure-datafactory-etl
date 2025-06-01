@@ -57,8 +57,45 @@
 						"type": "DatasetReference"
 					}
 				}
+			},
+			{
+				"name": "Update_Control_Table",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "WithControlTable",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[Update_ETL_Control]"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				}
 			}
 		],
+		"parameters": {
+			"@TableName": {
+				"type": "string",
+				"defaultValue": "'CP_Area_Config_Master'"
+			},
+			"@Status": {
+				"type": "string",
+				"defaultValue": "'SUCCESS'"
+			}
+		},
 		"annotations": []
 	}
 }
